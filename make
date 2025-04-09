@@ -1,4 +1,3 @@
-
 VSIM   = vsim
 VOPT   = vopt
 VLOG   = vlog
@@ -23,21 +22,38 @@ SUPPRESS_CMD = -suppress vlog-2583 -suppress vlog-8386 -suppress vlog-2575 -svin
 
 SIM_TIME = 100ns;
 
+# Derleme
 VLOG_OPT = -sv -64 +cover=bcestf $(SUPPRESS_CMD) -work $(WORKDIR) $(INC_DIR) -f $(RTL_FILES) -f $(UVM_FILES)
 
-VOPT_OPT =  -l vopt.log  \
+# FAST parametresiyle acc, cover, assert gibi şeyler sadeleştirilir
+VOPT_OPT_NORMAL =  -l vopt.log \
 			-L /home/v2710_user2/Documents/questa_sim_libs/unisims_ver \
 			-L /home/v2710_user2/Documents/questa_sim_libs/unimacro_ver \
 			-L /home/v2710_user2/Documents/questa_sim_libs/secureip \
 			-L /home/v2710_user2/Documents/questa_sim_libs/xpm \
 			-work work work.tb_top work.glbl -o tb_top_opt \
 			+cover=bcestf \
-			+acc 
+			+acc
 
-VSIM_OPT =  -t 1ps \
+VOPT_OPT_FAST =  -l vopt.log \
+			-L /home/v2710_user2/Documents/questa_sim_libs/unisims_ver \
+			-L /home/v2710_user2/Documents/questa_sim_libs/unimacro_ver \
+			-L /home/v2710_user2/Documents/questa_sim_libs/secureip \
+			-L /home/v2710_user2/Documents/questa_sim_libs/xpm \
+			-work work work.tb_top work.glbl -o tb_top_opt \
+			+acc=/tb_top/dut  \
+			-O5
+
+VSIM_OPT_NORMAL = -t 1ps \
 			-assertdebug \
 			-do "do ./scripts/wave.do; run $(SIM_TIME)" work.tb_top_opt
 
+VSIM_OPT_FAST = -c -t 1ps \
+			+notimingchecks \
+			+UVM_NO_RELNOTES \
+			-do "run $(SIM_TIME)" work.tb_top_opt
+
+# Ayarlar ve koşullar
 setup:
 	@echo "File hierarchy is generating..."
 	$(VLIB) $(WORKDIR)
@@ -49,12 +65,19 @@ compile: setup
 
 optimize: compile
 	@echo "Optimize Design Step II"
-	$(VOPT) $(VOPT_OPT) 
+ifeq ($(FAST),1)
+	$(VOPT) $(VOPT_OPT_FAST)
+else
+	$(VOPT) $(VOPT_OPT_NORMAL)
+endif
 
 simulate: optimize
 	@echo "Simulate Design Step III"
-	vsim $(VSIM_OPT)
-
+ifeq ($(FAST),1)
+	$(VSIM) $(VSIM_OPT_FAST)
+else
+	$(VSIM) $(VSIM_OPT_NORMAL)
+endif
 
 clean:
 	@echo "Cleaning up..."

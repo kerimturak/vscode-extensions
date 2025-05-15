@@ -362,6 +362,36 @@ module tb_pcie ();
 
   // Basit test: link up kontrolü ve yazma işlemi
   initial begin
+
+    // SYSTEM_INITIALIZATION
+    // 1- Wait transaction reset
+    // 2- Wait for transaction link up
+    // 3- Wait for link speed change and done
+    //  // SYSTEM_CONFIGURATION_CHECK
+    //  // 4- T0 Configuration read and wait read answer
+    //  // 5- Check read data if DATA[19:16] == 1 -> 2.5 GT else 5.0 GT
+    //  // 6- Check read data if DATA[23:20] == 4'h4 link width
+    //  // 7- T0 Configuration read and wait read answer
+    //  // 8- Check read data if Device/Vendor ID DATA[31:16] != 16'h7024 failed
+    //  // 9- T0 Configuration read and wait read answer
+    //  // 10 - Check read data if CMPS ID DATA[2:0] != 3'd2 failed
+    //  // 11 - System Check passed
+    //  //  // TSK_BAR_INIT
+    //  //  //  // TSK_BAR_SCAN
+    //  //  //  // 12 - T0 Configuration write
+    //  //  //  // 13 - Determine Range for BAR0
+    //  //  //  // 14 - T0 Configuration read and wait read answer
+    //  //  //  // 15 - T0 Configuration read and wait read answer
+    //  //  //  // 16 - Read BAR0 Range
+    //  //  //  // 17 - 18 - 19 - 20 - 21 BAR 1
+    //  //  //  // 21 - 22 - 23 - 24 - 21 BAR 2
+    //  //  //  // 25 - 26 - 27 - 28 - 21 BAR 3
+    //  //  //  // 17 - 29 - 30 - 31 - 32 BAR 4
+    //  //  //  // 17 - 33 - 34 - 35 - 36 BAR 5
+    //  //  //  // 17 - 37 - 38 - 39 - 40 ROM bar
+    //  //  //  // Builde PCIE Map
+    //  //  //  // TSK_BAR_PROGRAM PCIE Map
+
     automatic logic [31:0] dw0;
     automatic logic [31:0] dw1;
     automatic logic [31:0] dw2;
@@ -397,8 +427,7 @@ module tb_pcie ();
     // Link up sonrası yazma okuma işlemi
 
 
-    // Config
-    // Write - cycle - 1
+    // 1- Read Address 0x0 (Device ID - Vendor ID)
     s_axis_tx_tuser_rp <= #(1) 4'd0;
     s_axis_tx_tdata_rp <= #(1) 64'h01af_000f_0400_0001;
     s_axis_tx_tkeep_rp <= #(1) 8'hff;
